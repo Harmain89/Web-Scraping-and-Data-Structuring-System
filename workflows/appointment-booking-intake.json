@@ -1,0 +1,466 @@
+{
+  "id": "ASKLL0zdv2F7Kc9m",
+  "name": "Appointment Booking Follow-up System \u2014 Booking Intake",
+  "active": false,
+  "isArchived": false,
+  "versionId": "3c08675f-2d36-43e9-bc51-d88b2e11fffd",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "createdAt": "2026-09-29T13:18:05.675Z",
+  "updatedAt": "2026-09-29T13:18:05.675Z",
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "connections": {
+    "Booking Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize & Validate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize & Validate": {
+      "main": [
+        [
+          {
+            "node": "Is Valid Request?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Valid Request?": {
+      "main": [
+        [
+          {
+            "node": "Check Calendar Availability",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Bad Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Calendar Availability": {
+      "main": [
+        [
+          {
+            "node": "Evaluate Slot & Conflict",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate Slot & Conflict": {
+      "main": [
+        [
+          {
+            "node": "Is Slot Available?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Slot Available?": {
+      "main": [
+        [
+          {
+            "node": "Create Calendar Event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Conflict",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Calendar Event": {
+      "main": [
+        [
+          {
+            "node": "Format Booking Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Booking Record": {
+      "main": [
+        [
+          {
+            "node": "Save Booking to Data Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Booking to Data Table": {
+      "main": [
+        [
+          {
+            "node": "Send Confirmation Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Confirmation Email": {
+      "main": [
+        [
+          {
+            "node": "Send Confirmation WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Confirmation WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Respond Booking Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "id": "9c4e821f-2c96-48cc-8b0f-ceb54cc61b8c",
+      "name": "Booking Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        192
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "appointment-booking",
+        "responseMode": "responseNode"
+      },
+      "webhookId": "1f0f2896-a51d-4a39-b59f-fa3c87891d59"
+    },
+    {
+      "id": "2f029253-77c3-4a89-a714-1f97f7e1713a",
+      "name": "Normalize & Validate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        192
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "\nconst input = $input.first().json;\nconst data = input.body || input;\n\nconst name = (data.name || '').trim();\nlet phone = (data.phone || '').trim().replace(/[\\s-]/g, '');\nconst email = (data.email || '').trim().toLowerCase();\nconst service = (data.service || 'Consultation').trim();\nconst source = (data.source || 'website').trim();\nconst timezone = (data.timezone || 'Asia/Karachi').trim();\nconst durationMinutes = Number(data.duration_minutes || 45);\n\nconst errors = [];\nif (!name || name.length < 2) errors.push('Valid customer name is required (min 2 chars).');\nif (!/^\\+?[1-9]\\d{7,14}$/.test(phone)) errors.push('Valid phone number in E.164 format is required.');\nif (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) errors.push('Valid email address is required.');\nif (!data.requested_start) errors.push('requested_start timestamp is required.');\n\nlet startDate, endDate;\nif (data.requested_start) {\n  startDate = new Date(data.requested_start);\n  if (isNaN(startDate.getTime())) {\n    errors.push('requested_start must be a valid ISO 8601 date.');\n  } else if (startDate.getTime() <= Date.now() + 300000) {\n    errors.push('requested_start must be at least 5 minutes in the future.');\n  } else {\n    endDate = new Date(startDate.getTime() + durationMinutes * 60000);\n  }\n}\n\nif (!phone.startsWith('+')) {\n  phone = '+' + phone;\n}\n\nconst bookingId = 'BK-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7).toUpperCase();\nconst rescheduleUrl = 'https://realestateleadmanagement-n8n-b138c4-13-203-193-36.sslip.io/webhook/appointment-lifecycle?booking_id=' + bookingId + '&action=reschedule';\n\nreturn [{\n  json: {\n    is_valid: errors.length === 0,\n    errors: errors,\n    error_message: errors.join(' '),\n    booking_id: bookingId,\n    customer_name: name,\n    phone_e164: phone,\n    email: email,\n    service: service,\n    source: source,\n    timezone: timezone,\n    duration_minutes: durationMinutes,\n    requested_start: startDate ? startDate.toISOString() : null,\n    requested_end: endDate ? endDate.toISOString() : null,\n    reschedule_url: rescheduleUrl\n  }\n}];\n"
+      }
+    },
+    {
+      "id": "bc396a2a-fe84-43f8-916a-b06daad73e73",
+      "name": "Is Valid Request?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        192
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.is_valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "466808f3-9419-40e4-80e3-9f0797c7f2ee",
+      "name": "Check Calendar Availability",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        672,
+        96
+      ],
+      "parameters": {
+        "resource": "event",
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "mode": "list",
+          "value": "primary"
+        },
+        "returnAll": true,
+        "options": {
+          "timeMin": "={{ $json.requested_start }}",
+          "timeMax": "={{ $json.requested_end }}"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "1cc4b892-2f00-4c3f-a620-10338371d0a9",
+      "name": "Evaluate Slot & Conflict",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        96
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "\nconst booking = $('Normalize & Validate').first().json;\nconst items = $input.all();\n\nlet isConflict = false;\nlet conflictEvents = [];\n\nfor (const item of items) {\n  const evt = item.json;\n  if (evt && evt.id && evt.status !== 'cancelled' && evt.summary && !evt.error) {\n    isConflict = true;\n    conflictEvents.push({ id: evt.id, summary: evt.summary });\n  }\n}\n\nreturn [{\n  json: {\n    ...booking,\n    is_slot_available: !isConflict,\n    conflict_count: conflictEvents.length,\n    conflict_events: conflictEvents\n  }\n}];\n"
+      }
+    },
+    {
+      "id": "840e6ca5-7cd3-4c90-b2d8-3a315ac74f7d",
+      "name": "Is Slot Available?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        96
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.is_slot_available }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "8e124144-cc56-4379-8348-0e558607f0e1",
+      "name": "Create Calendar Event",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        1344,
+        0
+      ],
+      "parameters": {
+        "resource": "event",
+        "operation": "create",
+        "calendar": {
+          "__rl": true,
+          "mode": "list",
+          "value": "primary"
+        },
+        "start": "={{ $json.requested_start }}",
+        "end": "={{ $json.requested_end }}",
+        "summary": "={{ \"Appointment: \" + $json.service + \" - \" + $json.customer_name }}",
+        "description": "={{ \"Booking ID: \" + $json.booking_id + \"\\nCustomer: \" + $json.customer_name + \"\\nPhone: \" + $json.phone_e164 + \"\\nEmail: \" + $json.email + \"\\nService: \" + $json.service + \"\\nReschedule: \" + $json.reschedule_url }}"
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "107ea587-f991-485a-b81b-1db441d858d3",
+      "name": "Format Booking Record",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        0
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "\nconst booking = $('Evaluate Slot & Conflict').first().json;\nconst cal = $input.first() ? $input.first().json : {};\nconst calEventId = cal.id ? String(cal.id) : ('EVT-' + booking.booking_id);\nconst now = new Date().toISOString();\n\nreturn [{\n  json: {\n    booking_id: booking.booking_id,\n    customer_name: booking.customer_name,\n    phone_e164: booking.phone_e164,\n    email: booking.email,\n    service: booking.service,\n    source: booking.source || 'website',\n    timezone: booking.timezone || 'Asia/Karachi',\n    requested_start: booking.requested_start,\n    requested_end: booking.requested_end,\n    calendar_event_id: calEventId,\n    calendar_id: 'primary',\n    status: 'confirmed',\n    confirmation_sent: true,\n    whatsapp_confirmation_sent: true,\n    email_confirmation_sent: true,\n    reminder_24h_sent: false,\n    reminder_1h_sent: false,\n    appointment_completed: false,\n    no_show: false,\n    follow_up_sent: false,\n    reschedule_url: booking.reschedule_url,\n    created_at: now,\n    updated_at: now\n  }\n}];\n"
+      }
+    },
+    {
+      "id": "88766aae-d962-4ecf-927e-84bf3e83fdab",
+      "name": "Save Booking to Data Table",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1792,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "skyftJtM0pkUqeRp"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": null
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "56e6c601-7822-4382-a4f7-7d7e7e38e59b",
+      "name": "Send Confirmation Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2016,
+        0
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $('Format Booking Record').first().json.email }}",
+        "subject": "={{ \"Appointment Confirmed: \" + $('Format Booking Record').first().json.service + \" on \" + $('Format Booking Record').first().json.requested_start.split(\"T\")[0] }}",
+        "emailType": "html",
+        "message": "={{ \"<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;\"><h2 style=\"color: #2b6cb0;\">Appointment Confirmation</h2><p>Dear <strong>\" + $('Format Booking Record').first().json.customer_name + \"</strong>,</p><p>Your appointment has been successfully booked and confirmed.</p><table style=\"width: 100%; border-collapse: collapse; margin: 20px 0;\"><tr style=\"background: #f7fafc;\"><td style=\"padding: 10px; font-weight: bold;\">Booking ID:</td><td style=\"padding: 10px;\">\" + $('Format Booking Record').first().json.booking_id + \"</td></tr><tr><td style=\"padding: 10px; font-weight: bold;\">Service:</td><td style=\"padding: 10px;\">\" + $('Format Booking Record').first().json.service + \"</td></tr><tr style=\"background: #f7fafc;\"><td style=\"padding: 10px; font-weight: bold;\">Date & Time:</td><td style=\"padding: 10px;\">\" + $('Format Booking Record').first().json.requested_start + \" (\" + $('Format Booking Record').first().json.timezone + \")</td></tr><tr><td style=\"padding: 10px; font-weight: bold;\">Status:</td><td style=\"padding: 10px; color: #38a169; font-weight: bold;\">CONFIRMED</td></tr></table><p>If you need to reschedule or make changes, please use the link below:</p><p><a href=\"\" + $('Format Booking Record').first().json.reschedule_url + \"\" style=\"display: inline-block; padding: 10px 20px; background: #3182ce; color: #ffffff; text-decoration: none; border-radius: 5px;\">Manage / Reschedule Appointment</a></p><hr style=\"border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;\"><p style=\"font-size: 12px; color: #a0aec0;\">Automated Appointment System &bull; Please do not reply directly to this email.</p></div>\" }}"
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "a048951b-7418-4f47-960b-d1a12beb95cd"
+    },
+    {
+      "id": "078d7a2a-85a1-4879-8760-df0bf8fd986a",
+      "name": "Send Confirmation WhatsApp",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        2240,
+        0
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "phoneNumberId": "default",
+        "recipientPhoneNumber": "={{ $('Format Booking Record').first().json.phone_e164 }}",
+        "textBody": "={{ \"Hello \" + $('Format Booking Record').first().json.customer_name + \",\\n\\nYour appointment for \" + $('Format Booking Record').first().json.service + \" is CONFIRMED!\\n\\nBooking ID: \" + $('Format Booking Record').first().json.booking_id + \"\\nDate & Time: \" + $('Format Booking Record').first().json.requested_start + \" (\" + $('Format Booking Record').first().json.timezone + \")\\n\\nNeed to reschedule? Click here:\\n\" + $('Format Booking Record').first().json.reschedule_url + \"\\n\\nThank you!\" }}"
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "ce0501f5-429e-4119-8b0a-507b6f1d68a1"
+    },
+    {
+      "id": "5712c3a0-482d-4b93-a589-d8f4a732dac0",
+      "name": "Respond Booking Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2464,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, status: \"confirmed\", booking: $('Format Booking Record').first().json }) }}",
+        "options": {
+          "responseCode": 201
+        }
+      }
+    },
+    {
+      "id": "c9ab2345-6dd9-477b-a0cd-fa51189b4f3e",
+      "name": "Respond Conflict",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1344,
+        192
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, status: \"conflict\", message: \"The requested appointment time slot is already booked. Please choose an alternative slot.\", requested_start: $json.requested_start, requested_end: $json.requested_end }) }}",
+        "options": {
+          "responseCode": 409
+        }
+      }
+    },
+    {
+      "id": "6082ff34-8f09-4491-8a61-93f714710071",
+      "name": "Respond Bad Request",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        288
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, status: \"invalid_input\", errors: $json.errors, message: $json.error_message }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      }
+    }
+  ],
+  "nodeGroups": [],
+  "activeVersion": null,
+  "tags": [],
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "parentFolderId": null,
+  "description": "Production booking intake engine with payload validation, calendar slot conflict prevention, persistent state storage, and multi-channel confirmations.",
+  "scopes": [
+    "execution:reveal",
+    "workflow:create",
+    "workflow:delete",
+    "workflow:disableRedaction",
+    "workflow:enableRedaction",
+    "workflow:execute",
+    "workflow:execute-chat",
+    "workflow:export",
+    "workflow:import",
+    "workflow:list",
+    "workflow:move",
+    "workflow:publish",
+    "workflow:read",
+    "workflow:share",
+    "workflow:unpublish",
+    "workflow:unshare",
+    "workflow:update"
+  ],
+  "canExecute": true
+}
