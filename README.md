@@ -1,5 +1,12 @@
 <div align="center">
 
+<video src="./assets/hero-banner.mp4" width="100%" autoplay loop muted playsinline controls style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.3);">
+  <source src="./assets/hero-banner.mp4" type="video/mp4">
+  <img src="./assets/hero-banner.gif" alt="Automated Web Scraping and Data Cleaning Pipeline" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.3);" />
+</video>
+
+<br/><br/>
+
 # 🕷️ Web Scraping + Data Cleaning Pipeline
 
 ### Production-Grade Web Data Extraction, Automated Cleaning, Normalization, Deduplication & Daily Synchronization Engine Built with Python & n8n
@@ -11,12 +18,6 @@
 [![Data Quality](https://img.shields.io/badge/Deduplication-In--Memory_Diff-10B981?style=for-the-badge)](#-deduplication--change-detection-engine)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
-</div>
-
-<br/>
-
-<div align="center">
-  <img src="./assets/hero-banner.gif" alt="Automated Web Scraping and Data Cleaning Pipeline" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.3);" />
 </div>
 
 <br/>

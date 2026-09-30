@@ -116,7 +116,8 @@ NOTE: High-resolution images and an animated GIF header have ALREADY been genera
 and saved directly in the project `./assets/` directory. You can directly upload
 these files to your Upwork Project Catalog / Portfolio gallery:
 
-- Slide 1 (Hero Banner Image & Animated GIF):
+- Slide 1 (Hero Banner Video, Image & Animated GIF):
+  * Video: `./assets/hero-banner.mp4` (Full HD Video Banner)
   * Static: `./assets/hero-banner.png` or `./assets/hero-banner.jpg`
   * Animated Header: `./assets/hero-banner.gif`
 - Slide 2 (Pipeline Architecture Canvas):
