@@ -1,11 +1,14 @@
 <div align="center">
 
-<video src="./assets/hero-banner.mp4" width="100%" autoplay loop muted playsinline controls style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.3);">
-  <source src="./assets/hero-banner.mp4" type="video/mp4">
-  <img src="./assets/hero-banner.gif" alt="Automated Web Scraping and Data Cleaning Pipeline" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.3);" />
-</video>
+<a href="./assets/hero-banner.mp4">
+  <img src="./assets/hero-banner.gif" alt="Automated Web Scraping and Data Cleaning Pipeline Video Banner" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.3);" />
+</a>
 
-<br/><br/>
+<p align="center">
+  🎬 <strong><a href="./assets/hero-banner.mp4">▶ Click here to view / download full-resolution MP4 Video (<code>assets/hero-banner.mp4</code>)</a></strong>
+</p>
+
+<br/>
 
 # 🕷️ Web Scraping + Data Cleaning Pipeline
 
