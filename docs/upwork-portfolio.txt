@@ -110,7 +110,7 @@ I engineered an autonomous, enterprise-grade Web Scraping and Data Structuring P
 - Protocols: REST Webhooks, JSON payloads, Cron Scheduling
 
 --------------------------------------------------------------------------------
-6. UPWORK PORTFOLIO BANNER & GALLERY PROMPTS (1672 x 941 RESOLUTION)
+6. UPWORK PORTFOLIO BANNER & GALLERY PROMPTS (EXACT RESOLUTION: 1672 X 941)
 --------------------------------------------------------------------------------
 NOTE: High-resolution images and an animated GIF header have ALREADY been generated
 and saved directly in the project `./assets/` directory. You can directly upload
@@ -130,31 +130,27 @@ these files to your Upwork Project Catalog / Portfolio gallery:
 You can also re-generate or customize these visuals using the prompts below:
 
 ---
-[SLIDE 1 - HERO BANNER]
-File: assets/hero-banner.png (and animated assets/hero-banner.gif)
-Resolution: 1672 x 941 pixels (Aspect Ratio 16:9)
-Prompt:
-High-tech 3D isometric digital artwork representing an Automated Web Scraping and Data Cleaning Pipeline. On the left side, translucent web browser windows and ecommerce product catalog cards stream raw unstructured code and glowing neon data packets. In the center, a sleek futuristic glass processing engine branded with an n8n glowing coral logo and Python blue/gold emblems transforms dirty, fragmented text into glowing golden structured data streams. On the right side, pristine, beautifully organized holographic data tables and spreadsheets glow in emerald green, showing clean columns for SKU, Price, Rating, and Stock Status. Modern dark mode aesthetic, deep navy blue and cybernetic obsidian background, subtle grid floor, volumetric lighting, premium UI dashboard feel, hyper-detailed, 8k resolution, no text artifacts.
+[SLIDE 1 - HERO BANNER / PROJECT CATALOG COVER]
+Image Size: 1672 X 941 pixels (Aspect Ratio 16:9)
+Prompt to copy into Gemini:
+Generate a high-resolution 1672 X 941 widescreen image (16:9 aspect ratio). High-tech 3D isometric digital artwork representing an Automated Web Scraping and Data Cleaning Pipeline. On the left side, translucent web browser windows and ecommerce product catalog cards stream raw unstructured code and glowing neon data packets. In the center, a sleek futuristic glass processing engine branded with an n8n glowing coral logo and Python blue/gold emblems transforms dirty, fragmented text into glowing golden structured data streams. On the right side, pristine, beautifully organized holographic data tables and spreadsheets glow in emerald green, showing clean columns for SKU, Price, Rating, and Stock Status. Modern dark mode aesthetic, deep navy blue and cybernetic obsidian background, subtle grid floor, volumetric lighting, premium UI dashboard feel, hyper-detailed, 8k render, image size exactly 1672 X 941, no text artifacts.
 
 ---
 [SLIDE 2 - PIPELINE ARCHITECTURE & WORKFLOW CANVAS]
-File: assets/pipeline-architecture.png
-Resolution: 1672 x 941 pixels (Aspect Ratio 16:9)
-Prompt:
-Photorealistic modern SaaS interface presentation slide displaying an n8n workflow canvas for an ETL Data Pipeline. Clean node-and-wire diagram on dark charcoal gray canvas: Webhook Intake node connecting to Volume Safeguard node, into Data Validation node, branching into a Cleaning & Normalization JavaScript node, connecting to a Persistent Database Query node, into a smart Deduplication & Change Detection node, ending at a Data Table Insert node. Beautiful glowing connection lines in coral red and electric cyan. In the foreground, glowing HUD cards highlight "Raw Data -> Cleaned & Normalized -> Deduplicated & Synced". Ultra clean UI design, glassmorphic cards, crisp typography, corporate enterprise automation showcase, 16:9 ratio.
+Image Size: 1672 X 941 pixels (Aspect Ratio 16:9)
+Prompt to copy into Gemini:
+Generate a high-resolution 1672 X 941 widescreen image (16:9 aspect ratio). Photorealistic modern SaaS interface presentation slide displaying an n8n workflow canvas for an ETL Data Pipeline. Clean node-and-wire diagram on dark charcoal gray canvas: Webhook Intake node connecting to Volume Safeguard node, into Data Validation node, branching into a Cleaning & Normalization JavaScript node, connecting to a Persistent Database Query node, into a smart Deduplication & Change Detection node, ending at a Data Table Insert node. Beautiful glowing connection lines in coral red and electric cyan. In the foreground, glowing HUD cards highlight "Raw Data -> Cleaned & Normalized -> Deduplicated & Synced". Ultra clean UI design, glassmorphic cards, crisp typography, corporate enterprise automation showcase, image size exactly 1672 X 941.
 
 ---
 [SLIDE 3 - DATA TRANSFORMATION & CLEANING COMPARISON]
-File: assets/data-transformation.png
-Resolution: 1672 x 941 pixels (Aspect Ratio 16:9)
-Prompt:
-Modern side-by-side data transformation comparison graphic on a sleek dark slate background. On the left pane titled "BEFORE: Raw Messy Scraping", a chaotic red-accented terminal window displays dirty strings like "  \n£51.77  ", "Rating: Three", "In stock (22 available)", and broken relative URLs with warning icons. In the center, a glowing circular processing cog with code brackets illustrates automated ETL cleaning. On the right pane titled "AFTER: Clean Structured Catalog", a clean emerald green modern spreadsheet card displays perfectly formatted JSON and tabular columns: Price: 51.77 (Number), Currency: GBP, Rating: 3 (Integer), In Stock: true (Boolean), and canonical URLs. Clean SaaS interface, ultra-sharp resolution, modern developer aesthetic, 1672x941.
+Image Size: 1672 X 941 pixels (Aspect Ratio 16:9)
+Prompt to copy into Gemini:
+Generate a high-resolution 1672 X 941 widescreen image (16:9 aspect ratio). Modern side-by-side data transformation comparison graphic on a sleek dark slate background. On the left pane titled "BEFORE: Raw Messy Scraping", a chaotic red-accented terminal window displays dirty strings like "  \n£51.77  ", "Rating: Three", "In stock (22 available)", and broken relative URLs with warning icons. In the center, a glowing circular processing cog with code brackets illustrates automated ETL cleaning. On the right pane titled "AFTER: Clean Structured Catalog", a clean emerald green modern spreadsheet card displays perfectly formatted JSON and tabular columns: Price: 51.77 (Number), Currency: GBP, Rating: 3 (Integer), In Stock: true (Boolean), and canonical URLs. Clean SaaS interface, ultra-sharp resolution, modern developer aesthetic, image size exactly 1672 X 941.
 
 ---
 [SLIDE 4 - DAILY SYNC & DATABASE MONITORING DASHBOARD]
-File: assets/deduplication-sync.png
-Resolution: 1672 x 941 pixels (Aspect Ratio 16:9)
-Prompt:
-Futuristic analytics and data monitoring dashboard displaying automated daily scraping metrics. The main screen shows key performance indicator cards: "10,000+ Items Scraped Daily", "0 Duplicates Detected", "100% Data Validation Pass Rate", and "Execution Time: < 3.2s". A central timeline graph shows automated daily midnight runs running flawlessly. In the lower section, an active data table displays columns for record_id, title, category, price, status (active/updated), and timestamps. Sleek cyber-minimalist user interface, glowing neon blue, turquoise, and purple accents on dark obsidian glass, 8k render, professional Upwork portfolio quality.
+Image Size: 1672 X 941 pixels (Aspect Ratio 16:9)
+Prompt to copy into Gemini:
+Generate a high-resolution 1672 X 941 widescreen image (16:9 aspect ratio). Futuristic analytics and data monitoring dashboard displaying automated daily scraping metrics. The main screen shows key performance indicator cards: "10,000+ Items Scraped Daily", "0 Duplicates Detected", "100% Data Validation Pass Rate", and "Execution Time: < 3.2s". A central timeline graph shows automated daily midnight runs running flawlessly. In the lower section, an active data table displays columns for record_id, title, category, price, status (active/updated), and timestamps. Sleek cyber-minimalist user interface, glowing neon blue, turquoise, and purple accents on dark obsidian glass, 8k render, professional Upwork portfolio quality, image size exactly 1672 X 941.
 ================================================================================
 
