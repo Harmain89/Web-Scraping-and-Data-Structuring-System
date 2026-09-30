@@ -1,0 +1,122 @@
+[
+  {
+    "sku": "PROD-1000",
+    "title_raw": "A Light in the Attic",
+    "price_raw": "\u00c2\u00a351.77",
+    "rating_raw": "Three",
+    "availability_raw": "In stock",
+    "product_url": "http://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html",
+    "image_url": "http://books.toscrape.com/media/cache/2c/da/2cdad67c44b002e7ead0cc35693c0e8b.jpg",
+    "source": "books.toscrape.com",
+    "category_raw": "Books",
+    "scraped_at": "2026-09-30T05:29:13.132240+00:00"
+  },
+  {
+    "sku": "PROD-999",
+    "title_raw": "Tipping the Velvet",
+    "price_raw": "\u00c2\u00a353.74",
+    "rating_raw": "One",
+    "availability_raw": "In stock",
+    "product_url": "http://books.toscrape.com/catalogue/tipping-the-velvet_999/index.html",
+    "image_url": "http://books.toscrape.com/media/cache/26/0c/260c6ae16bce31c8f8c95daddd9f4a1c.jpg",
+    "source": "books.toscrape.com",
+    "category_raw": "Books",
+    "scraped_at": "2026-09-30T05:29:13.132240+00:00"
+  },
+  {
+    "sku": "PROD-998",
+    "title_raw": "Soumission",
+    "price_raw": "\u00c2\u00a350.10",
+    "rating_raw": "One",
+    "availability_raw": "In stock",
+    "product_url": "http://books.toscrape.com/catalogue/soumission_998/index.html",
+    "image_url": "http://books.toscrape.com/media/cache/3e/ef/3eef99c9d9adef34639f510662022830.jpg",
+    "source": "books.toscrape.com",
+    "category_raw": "Books",
+    "scraped_at": "2026-09-30T05:29:13.132240+00:00"
+  },
+  {
+    "sku": "PROD-997",
+    "title_raw": "Sharp Objects",
+    "price_raw": "\u00c2\u00a347.82",
+    "rating_raw": "Four",
+    "availability_raw": "In stock",
+    "product_url": "http://books.toscrape.com/catalogue/sharp-objects_997/index.html",
+    "image_url": "http://books.toscrape.com/media/cache/32/51/3251cf3a3412f53f339e42cac2134093.jpg",
+    "source": "books.toscrape.com",
+    "category_raw": "Books",
+    "scraped_at": "2026-09-30T05:29:13.132240+00:00"
+  },
+  {
+    "sku": "PROD-996",
+    "title_raw": "Sapiens: A Brief History of Humankind",
+    "price_raw": "\u00c2\u00a354.23",
+    "rating_raw": "Five",
+    "availability_raw": "In stock",
+    "product_url": "http://books.toscrape.com/catalogue/sapiens-a-brief-history-of-humankind_996/index.html",
+    "image_url": "http://books.toscrape.com/media/cache/be/a5/bea5697f2534a2f86a3ef27b5a8c12a6.jpg",
+    "source": "books.toscrape.com",
+    "category_raw": "Books",
+    "scraped_at": "2026-09-30T05:29:13.132240+00:00"
+  },
+  {
+    "sku": "PROD-995",
+    "title_raw": "The Requiem Red",
+    "price_raw": "\u00c2\u00a322.65",
+    "rating_raw": "One",
+    "availability_raw": "In stock",
+    "product_url": "http://books.toscrape.com/catalogue/the-requiem-red_995/index.html",
+    "image_url": "http://books.toscrape.com/media/cache/68/33/68339b4c9bc034267e1da611ab3b34f8.jpg",
+    "source": "books.toscrape.com",
+    "category_raw": "Books",
+    "scraped_at": "2026-09-30T05:29:13.132240+00:00"
+  },
+  {
+    "sku": "PROD-994",
+    "title_raw": "The Dirty Little Secrets of Getting Your Dream Job",
+    "price_raw": "\u00c2\u00a333.34",
+    "rating_raw": "Four",
+    "availability_raw": "In stock",
+    "product_url": "http://books.toscrape.com/catalogue/the-dirty-little-secrets-of-getting-your-dream-job_994/index.html",
+    "image_url": "http://books.toscrape.com/media/cache/92/27/92274a95b7c251fea59a2b8a78275ab4.jpg",
+    "source": "books.toscrape.com",
+    "category_raw": "Books",
+    "scraped_at": "2026-09-30T05:29:13.132240+00:00"
+  },
+  {
+    "sku": "PROD-993",
+    "title_raw": "The Coming Woman: A Novel Based on the Life of the Infamous Feminist, Victoria Woodhull",
+    "price_raw": "\u00c2\u00a317.93",
+    "rating_raw": "Three",
+    "availability_raw": "In stock",
+    "product_url": "http://books.toscrape.com/catalogue/the-coming-woman-a-novel-based-on-the-life-of-the-infamous-feminist-victoria-woodhull_993/index.html",
+    "image_url": "http://books.toscrape.com/media/cache/3d/54/3d54940e57e662c4dd1f3ff00c78cc64.jpg",
+    "source": "books.toscrape.com",
+    "category_raw": "Books",
+    "scraped_at": "2026-09-30T05:29:13.132240+00:00"
+  },
+  {
+    "sku": "PROD-992",
+    "title_raw": "The Boys in the Boat: Nine Americans and Their Epic Quest for Gold at the 1936 Berlin Olympics",
+    "price_raw": "\u00c2\u00a322.60",
+    "rating_raw": "Four",
+    "availability_raw": "In stock",
+    "product_url": "http://books.toscrape.com/catalogue/the-boys-in-the-boat-nine-americans-and-their-epic-quest-for-gold-at-the-1936-berlin-olympics_992/index.html",
+    "image_url": "http://books.toscrape.com/media/cache/66/88/66883b91f6804b2323c8369331cb7dd1.jpg",
+    "source": "books.toscrape.com",
+    "category_raw": "Books",
+    "scraped_at": "2026-09-30T05:29:13.132240+00:00"
+  },
+  {
+    "sku": "PROD-991",
+    "title_raw": "The Black Maria",
+    "price_raw": "\u00c2\u00a352.15",
+    "rating_raw": "One",
+    "availability_raw": "In stock",
+    "product_url": "http://books.toscrape.com/catalogue/the-black-maria_991/index.html",
+    "image_url": "http://books.toscrape.com/media/cache/58/46/5846057e28022268153beff6d352b06c.jpg",
+    "source": "books.toscrape.com",
+    "category_raw": "Books",
+    "scraped_at": "2026-09-30T05:29:13.132240+00:00"
+  }
+]

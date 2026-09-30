@@ -1,0 +1,375 @@
+{
+  "id": "kfiCNxBHNp96exFP",
+  "name": "Web Scraping + Data Cleaning Pipeline",
+  "active": false,
+  "isArchived": false,
+  "versionId": "b328d0d1-9805-4704-a839-bee6cdf06079",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "createdAt": "2026-09-30T05:35:30.312Z",
+  "updatedAt": "2026-09-30T05:35:30.312Z",
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "connections": {
+    "Scraper Ingestion Webhook": {
+      "main": [
+        [
+          {
+            "node": "Ingest & Check Volume",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ingest & Check Volume": {
+      "main": [
+        [
+          {
+            "node": "Is Scrape Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Scrape Valid?": {
+      "main": [
+        [
+          {
+            "node": "Clean & Normalize Records",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Scrape Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean & Normalize Records": {
+      "main": [
+        [
+          {
+            "node": "Fetch Existing Database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Existing Database": {
+      "main": [
+        [
+          {
+            "node": "Deduplicate & Detect Changes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deduplicate & Detect Changes": {
+      "main": [
+        [
+          {
+            "node": "Format Records For Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Records For Store": {
+      "main": [
+        [
+          {
+            "node": "Has New Records?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has New Records?": {
+      "main": [
+        [
+          {
+            "node": "Insert New Records",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Pipeline Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert New Records": {
+      "main": [
+        [
+          {
+            "node": "Respond Pipeline Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "id": "dd494823-cc84-47ba-94a5-9bedca76f994",
+      "name": "Scraper Ingestion Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        176
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "data-pipeline-scrape",
+        "responseMode": "responseNode"
+      },
+      "webhookId": "df2b8d46-eae7-4c62-a050-e7ff1d6d9080"
+    },
+    {
+      "id": "7aa75b96-c26c-483f-8aa2-f0536277320b",
+      "name": "Ingest & Check Volume",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        176
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "\nconst allInputs = $input.all();\nlet items = [];\n\nfor (const input of allInputs) {\n  const json = input.json;\n  if (Array.isArray(json.body)) {\n    items = items.concat(json.body);\n  } else if (json.body && typeof json.body === 'object') {\n    items.push(json.body);\n  } else if (Array.isArray(json)) {\n    items = items.concat(json);\n  } else if (json && json.sku) {\n    items.push(json);\n  }\n}\n\n// Safety check: Prevent destructive execution if zero records received\nif (items.length === 0) {\n  return [{\n    json: {\n      is_valid_scrape: false,\n      error_message: 'Empty scrape detected (0 records). Safeguard tripped to protect dataset.',\n      records: []\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    is_valid_scrape: true,\n    total_raw_count: items.length,\n    raw_records: items\n  }\n}];\n"
+      }
+    },
+    {
+      "id": "65120660-0c58-40f4-b5db-990fab367f3f",
+      "name": "Is Scrape Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        176
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.is_valid_scrape }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "5183e66e-8563-453e-8db1-018529d2f4fe",
+      "name": "Clean & Normalize Records",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        80
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "\nconst rawData = $('Ingest & Check Volume').first().json.raw_records || [];\nconst nowIso = new Date().toISOString();\n\nconst ratingMap = {\n  'one': 1,\n  'two': 2,\n  'three': 3,\n  'four': 4,\n  'five': 5\n};\n\nconst cleanedRecords = [];\n\nfor (const raw of rawData) {\n  const sku = (raw.sku || '').trim();\n  const title = (raw.title_raw || raw.title || '').trim();\n  if (!sku || !title) continue;\n\n  // Clean Price: remove any non-digit/dot characters\n  const rawPriceStr = String(raw.price_raw || raw.price || '0');\n  const priceClean = parseFloat(rawPriceStr.replace(/[^0-9.]/g, '')) || 0.0;\n\n  // Normalize Rating\n  const ratingKey = String(raw.rating_raw || raw.rating || '').toLowerCase().trim();\n  const ratingClean = ratingMap[ratingKey] || 0;\n\n  // Normalize Availability\n  const availStr = String(raw.availability_raw || raw.availability || '').toLowerCase();\n  const inStock = availStr.includes('in stock') || raw.in_stock === true;\n\n  cleanedRecords.push({\n    record_id: sku,\n    source: raw.source || 'books.toscrape.com',\n    title: title,\n    category: (raw.category_raw || raw.category || 'Books').trim(),\n    price: priceClean,\n    currency: 'GBP',\n    rating: ratingClean,\n    in_stock: inStock,\n    product_url: raw.product_url || '',\n    image_url: raw.image_url || '',\n    status: 'active',\n    scraped_at: raw.scraped_at || nowIso\n  });\n}\n\nreturn [{\n  json: {\n    cleaned_records: cleanedRecords\n  }\n}];\n"
+      }
+    },
+    {
+      "id": "9f676a16-58d0-4288-8083-ac21031af2eb",
+      "name": "Fetch Existing Database",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        80
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "jiPLikaVYg9vxrIQ"
+        },
+        "returnAll": true
+      },
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "f314e2bf-5d12-4232-a491-3d31f70eaf21",
+      "name": "Deduplicate & Detect Changes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        80
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "\nconst cleaned = $('Clean & Normalize Records').first().json.cleaned_records || [];\nconst existingRows = $input.all().map(i => i.json).filter(r => r && r.record_id);\n\nconst existingMap = new Map();\nfor (const row of existingRows) {\n  existingMap.set(row.record_id, row);\n}\n\nconst nowIso = new Date().toISOString();\nconst newRecords = [];\nconst updatedRecords = [];\nconst unchangedRecords = [];\n\nfor (const item of cleaned) {\n  const existing = existingMap.get(item.record_id);\n\n  if (!existing) {\n    // Brand new record\n    newRecords.push({\n      ...item,\n      first_seen_at: nowIso,\n      last_seen_at: nowIso,\n      last_changed_at: nowIso,\n      diff_status: 'NEW'\n    });\n  } else {\n    // Existing record - detect attribute differences\n    const priceChanged = Math.abs((existing.price || 0) - item.price) > 0.001;\n    const stockChanged = (existing.in_stock !== item.in_stock);\n    const titleChanged = (existing.title !== item.title);\n\n    if (priceChanged || stockChanged || titleChanged) {\n      updatedRecords.push({\n        ...item,\n        first_seen_at: existing.first_seen_at || nowIso,\n        last_seen_at: nowIso,\n        last_changed_at: nowIso,\n        status: 'updated',\n        diff_status: 'UPDATED'\n      });\n    } else {\n      unchangedRecords.push({\n        ...item,\n        first_seen_at: existing.first_seen_at || nowIso,\n        last_seen_at: nowIso,\n        last_changed_at: existing.last_changed_at || nowIso,\n        status: 'active',\n        diff_status: 'UNCHANGED'\n      });\n    }\n  }\n}\n\nreturn [{\n  json: {\n    total_processed: cleaned.length,\n    new_count: newRecords.length,\n    updated_count: updatedRecords.length,\n    unchanged_count: unchangedRecords.length,\n    new_records: newRecords,\n    updated_records: updatedRecords,\n    unchanged_records: unchangedRecords\n  }\n}];\n"
+      }
+    },
+    {
+      "id": "ce3b5fa1-a0fc-4c2e-b267-7db347afca09",
+      "name": "Format Records For Store",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        80
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "\nconst diff = $('Deduplicate & Detect Changes').first().json;\nconst toInsert = diff.new_records || [];\n\nif (toInsert.length === 0) {\n  return [{ json: { has_new_records: false } }];\n}\n\nreturn toInsert.map(r => ({\n  json: {\n    has_new_records: true,\n    record_id: r.record_id,\n    source: r.source,\n    title: r.title,\n    category: r.category,\n    price: r.price,\n    currency: r.currency,\n    rating: r.rating,\n    in_stock: r.in_stock,\n    product_url: r.product_url,\n    image_url: r.image_url,\n    status: r.status,\n    first_seen_at: r.first_seen_at,\n    last_seen_at: r.last_seen_at,\n    last_changed_at: r.last_changed_at,\n    scraped_at: r.scraped_at\n  }\n}));\n"
+      }
+    },
+    {
+      "id": "37573438-9488-42e4-bfa3-1245292897e7",
+      "name": "Has New Records?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1568,
+        80
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.has_new_records }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "dad84440-9e02-4a27-a575-c6d2baaaf26a",
+      "name": "Insert New Records",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1792,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "jiPLikaVYg9vxrIQ"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": null
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "25063856-132d-4187-b2b4-2c9ef77022af",
+      "name": "Respond Pipeline Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2016,
+        80
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, status: \"completed\", metrics: $('Deduplicate & Detect Changes').first().json }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "4c5a92c6-6810-4a68-be7f-4005ea8cfd23",
+      "name": "Respond Scrape Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        272
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, status: \"empty_or_failed_scrape\", error: $json.error_message }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      }
+    }
+  ],
+  "nodeGroups": [],
+  "activeVersion": null,
+  "tags": [],
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "parentFolderId": null,
+  "description": "Autonomous data extraction, cleaning, normalization, deduplication, and persistent data storage pipeline for public web data.",
+  "scopes": [
+    "execution:reveal",
+    "workflow:create",
+    "workflow:delete",
+    "workflow:disableRedaction",
+    "workflow:enableRedaction",
+    "workflow:execute",
+    "workflow:execute-chat",
+    "workflow:export",
+    "workflow:import",
+    "workflow:list",
+    "workflow:move",
+    "workflow:publish",
+    "workflow:read",
+    "workflow:share",
+    "workflow:unpublish",
+    "workflow:unshare",
+    "workflow:update"
+  ],
+  "canExecute": true
+}

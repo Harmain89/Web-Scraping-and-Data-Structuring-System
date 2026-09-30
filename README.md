@@ -1,19 +1,15 @@
 <div align="center">
 
-# 📅 Autonomous Appointment Booking, Conflict Prevention & Follow-up System
+# 🕷️ Web Scraping + Data Cleaning Pipeline
 
-### Enterprise-Grade Scheduling, Real-Time Google Calendar Synchronization, WhatsApp Cloud API & Gmail Automation Built in n8n
+### Production-Grade Web Data Extraction, Automated Cleaning, Normalization, Deduplication & Daily Synchronization Engine Built with Python & n8n
 
 [![n8n](https://img.shields.io/badge/Platform-n8n_v1.0+-EA4B71?style=for-the-badge&logo=n8n&logoColor=white)](https://n8n.io)
-[![Google Calendar](https://img.shields.io/badge/Google_Calendar-API_v3-4285F4?style=for-the-badge&logo=google-calendar&logoColor=white)](https://developers.google.com/calendar)
-[![WhatsApp Cloud API](https://img.shields.io/badge/WhatsApp-Cloud_API_v20.0-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://business.whatsapp.com/)
-[![Gmail](https://img.shields.io/badge/Gmail-OAuth_2.0-D14836?style=for-the-badge&logo=gmail&logoColor=white)](https://workspace.google.com/products/gmail/)
-[![Double Booking](https://img.shields.io/badge/Double_Booking-0%25_Conflict_Free-brightgreen?style=for-the-badge)](#-double-booking-prevention-matrix)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![BeautifulSoup](https://img.shields.io/badge/Scraper-BeautifulSoup4-43B02A?style=for-the-badge)](https://pypi.org/project/beautifulsoup4/)
+[![ETL Pipeline](https://img.shields.io/badge/Pipeline-Automated_ETL-blueviolet?style=for-the-badge)](#-architecture--data-flow)
+[![Data Quality](https://img.shields.io/badge/Deduplication-In--Memory_Diff-10B981?style=for-the-badge)](#-deduplication--change-detection-engine)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
-
-<br/>
-
-<img src="./assets/hero-banner.jpg" alt="Autonomous Appointment Booking Follow-up System" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.3);" />
 
 </div>
 
@@ -21,259 +17,196 @@
 
 ## 🎯 What Is This System For?
 
-In high-growth service businesses, real estate agencies, medical practices, and consulting firms, manual scheduling and naive webhook setups cause **costly double-bookings, high client no-show rates (up to 35%), and hours of administrative back-and-forth communication**.
+Organizations and growth teams running **competitor price intelligence, ecommerce catalog aggregation, lead generation, or market research** face three major data engineering hurdles:
 
-This project is an **autonomous, production-grade appointment lifecycle orchestration engine** engineered in **n8n**. It completely eliminates human intervention from the scheduling process while guaranteeing:
+1. **Messy & Inconsistent Web Data:** Public websites format data erratically—raw price strings with currency symbols (`"£51.77"`), spelled-out star ratings (`"Three"` instead of `3`), unstructured stock descriptions (`"In stock (22 available)"`), embedded HTML entities, and relative URLs.
+2. **Duplicate Records & Database Bloat:** Running crawlers on recurring schedules without smart change detection repeatedly inserts identical records, exhausting storage quotas, skewing analytics, and driving up database costs.
+3. **Fragile Scraping Infrastructure:** Fragile scrapers break silently when network hiccups occur or when sites encounter unexpected formatting variations.
 
-* **100% Conflict-Free Scheduling:** Pre-booking Google Calendar queries detect overlapping events and race conditions, blocking duplicate bookings with sub-second HTTP responses.
-* **40%+ Reduction in No-Shows:** Automated countdown alerts via **WhatsApp Cloud API** and branded **HTML emails** at 24 hours and 1 hour before meeting time.
-* **Frictionless Self-Serve Rescheduling:** Clients can reschedule or cancel with 1 click directly from their confirmation messages without calling or back-and-forth emails.
-* **Automated Post-Meeting Retention:** Autonomous follow-up triggers thank-you notes, collects client feedback, or provides 1-click rebooking recovery links for missed appointments.
-* **Zero Dependency on Fragile "Wait" Nodes:** Uses an atomic, timestamp-reconciled scheduled engine that survives n8n server restarts and outages with zero lost state.
+### The Solution
+
+This system is an **autonomous, enterprise-grade ETL (Extract, Transform, Load) pipeline** that unites:
+* **A High-Performance Python Web Scraper** capable of harvesting live product catalogs (verified against `books.toscrape.com` with 1,000+ items across 50 categories).
+* **An 11-Node n8n Orchestration Workflow** that receives raw payloads, enforces volume safeguards, cleans and normalizes dirty attributes, compares items against historical data, and inserts or updates only active changes into a persistent database.
+* **Autonomous Daily Execution** via scheduled cron triggers for hands-off data freshness.
 
 ---
 
-## 🏗️ System Architecture & Workflow Separation
-
-To guarantee fault isolation, ultra-fast API response times, and resilience against server crashes, this system is decoupled into **3 relational, modular n8n workflows** connected to an atomic **23-column persistent Data Table**:
-
-<div align="center">
-  <img src="./assets/workflow-architecture.jpg" alt="Workflow Architecture" width="100%" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.25);" />
-</div>
-
-<br/>
+## 📐 Architecture & Data Flow
 
 ```mermaid
-graph TD
-    subgraph Intake ["Workflow 1: Booking Intake & Slot Engine"]
-        A[Client Booking Request<br/>Web Form / WhatsApp / API] -->|POST /webhook/appointment-booking| B[Normalize & Validate Payload]
-        B --> C{Valid Input?}
-        C -->|No| D[HTTP 400 Bad Request]
-        C -->|Yes| E[Query Google Calendar Availability]
-        E --> F{Slot Occupied?}
-        F -->|Yes| G[HTTP 409 Conflict Detected]
-        F -->|No| H[Create Google Calendar Event]
-        H --> I[Persist to n8n Data Table]
-        I --> J[Dispatch WhatsApp & Gmail Confirmations]
-        J --> K[HTTP 201 Created + Reschedule URL]
+flowchart TD
+    subgraph Data Extraction Layer
+        A[Target Web Catalog<br/>books.toscrape.com] -->|HTTP GET / BeautifulSoup| B[Python Scraper Engine<br/>scraper/scraper.py]
+        B -->|JSON Batch Payload| C[Scraped Catalog Records]
     end
 
-    subgraph Lifecycle ["Workflow 2: Reschedule & Cancellation Engine"]
-        L[Client Clicks Manage Link<br/>or Sends Action] -->|POST /webhook/appointment-lifecycle| M[Validate Request & Booking ID]
-        M --> N{Action Type?}
-        N -->|Cancel| O[Delete Calendar Event<br/>Update Status: 'cancelled'<br/>Send Cancel Alerts]
-        N -->|Reschedule| P[Check New Slot Availability]
-        P --> Q{Conflict?}
-        Q -->|Yes| R[HTTP 409 Reschedule Conflict]
-        Q -->|No| S[Update Calendar Event<br/>Update Data Table<br/>Reset Reminder Flags<br/>Send New Confirmations]
+    subgraph n8n Ingestion & Guardrails
+        C -->|POST /webhook/scraped-data-intake| D[Webhook Trigger]
+        E[Schedule Trigger<br/>Daily 00:00 UTC] -.->|Automated Run| D
+        D --> F[Volume Safeguard<br/>Enforce Batch Caps]
+        F --> G[Data Validation Engine<br/>Check SKU & Mandatory Attributes]
     end
 
-    subgraph Reminders ["Workflow 3: Scheduled Reminder & Follow-up Engine"]
-        T[Scheduled Cron Trigger<br/>Every 15 Minutes] --> U[Query Active Data Table Bookings]
-        U --> V{Timeline Stage?}
-        V -->|24h Before Meeting| W[Send 24h WhatsApp & Email Reminder<br/>Mark 'reminder_24h_sent = true']
-        V -->|1h Before Meeting| X[Send 1h WhatsApp & Email Reminder<br/>Mark 'reminder_1h_sent = true']
-        V -->|15-180m Post-Meeting| Y[Send Thank You & Review Request<br/>or No-Show Recovery Link<br/>Mark 'completed']
+    subgraph Transformation & Intelligence
+        G --> H[Cleaning & Normalization Engine<br/>Prices, Currencies, Ratings, Booleans]
+        H -->|Clean Items| I[Fetch Existing Database<br/>scraped_catalog_data Data Table]
+        I --> J[Deduplication & Change Detection<br/>NEW vs UPDATED vs UNCHANGED]
     end
+
+    subgraph Persistence & Response
+        J -->|Filter Out UNCHANGED| K{Has Changes?}
+        K -->|NEW or UPDATED| L[Insert / Update Table<br/>scraped_catalog_data]
+        K -->|All Unchanged| M[Skip DB Writes]
+        L --> N[Webhook HTTP 200 Response<br/>Audit Summary]
+        M --> N
+    end
+
+    classDef extract fill:#3b82f6,stroke:#1d4ed8,stroke-width:2px,color:#fff;
+    classDef n8n fill:#ea4b71,stroke:#be185d,stroke-width:2px,color:#fff;
+    classDef check fill:#f59e0b,stroke:#b45309,stroke-width:2px,color:#fff;
+    classDef persist fill:#10b981,stroke:#047857,stroke-width:2px,color:#fff;
+
+    class A,B,C extract;
+    class D,E,F,G,H,I n8n;
+    class J,K check;
+    class L,M,N persist;
 ```
 
 ---
 
-## 🧩 Deep Dive: The 3 Core Workflows
+## 🧼 Data Cleaning & Normalization Engine
 
-### 1. Booking Intake & Availability Engine
-* **Workflow ID:** `ASKLL0zdv2F7Kc9m`
-* **Trigger:** Webhook (`POST /webhook/appointment-booking`)
-* **File:** [`workflows/appointment-booking-intake.json`](workflows/appointment-booking-intake.json)
-* **What it does:**
-  1. Accepts canonical booking requests from website forms, landing pages, or conversational AI bots.
-  2. Normalizes phone numbers to **E.164 international standard** and validates ISO-8601 future timestamps.
-  3. Queries Google Calendar for any overlapping events between `requested_start` and `requested_end`.
-  4. Returns instant `HTTP 409 Conflict` if the calendar is already booked.
-  5. Atomically creates the Google Calendar event with customer details and generated `booking_id`.
-  6. Writes a complete record to the persistent n8n Data Table.
-  7. Fires simultaneous confirmation messages through **WhatsApp Cloud API** and responsive **HTML Gmail**.
+Raw scraped data is normalized deterministically inside the n8n pipeline before reaching storage:
 
-### 2. Reschedule & Cancellation Engine
-* **Workflow ID:** `kmWPb71FIwSjvkY8`
-* **Trigger:** Webhook (`POST /webhook/appointment-lifecycle`)
-* **File:** [`workflows/appointment-booking-lifecycle.json`](workflows/appointment-booking-lifecycle.json)
-* **What it does:**
-  1. Handles client modification requests via their personalized `reschedule_url`.
-  2. **Cancellation Path:** Deletes the Google Calendar event, updates the database status to `cancelled`, and sends cancellation notices across email and WhatsApp.
-  3. **Rescheduling Path:** Validates the new requested slot, executes a fresh calendar conflict check (smartly ignoring the customer's own existing event), updates the calendar entry, resets the reminder flags (`reminder_24h_sent = false`, `reminder_1h_sent = false`), and dispatches updated confirmations.
-
-### 3. Automated Reminder & Follow-up Engine
-* **Workflow ID:** `QGPkeJYQgIIWq65K`
-* **Trigger:** Scheduled Cron (`Every 15 Minutes`)
-* **File:** [`workflows/appointment-booking-reminders.json`](workflows/appointment-booking-reminders.json)
-* **What it does:**
-  1. Autonomous polling engine that operates completely independently of webhooks.
-  2. Scans active bookings in the n8n Data Table and evaluates time offsets:
-     * **24-Hour Stage (23h–25h window):** Dispatches 24h WhatsApp message & email reminder; marks `reminder_24h_sent = true`.
-     * **1-Hour Stage (45m–75m window):** Dispatches urgency countdown via WhatsApp & email; marks `reminder_1h_sent = true`.
-     * **Post-Meeting Recovery (15m–180m after):** Dispatches feedback survey and review requests or a 1-click rebooking recovery link for missed sessions; marks `status = 'completed'`.
-
----
-
-## 🛡️ Double-Booking Prevention Matrix
-
-| Scenario | Traditional Zapier / Simple Webhook | Our n8n Architecture | Result |
+| Field | Raw Scraped Input | Cleaned / Normalized Value | Transformation Applied |
 | :--- | :--- | :--- | :--- |
-| **Simultaneous Webhooks** | Blindly creates duplicate events on calendar | Atomic calendar query & lock before insert | **Zero double-bookings** |
-| **Customer Reschedules** | Creates a 2nd calendar event, leaving the old one | Updates original event ID; syncs database record | **Calendar remains pristine** |
-| **Server Restart / Crash** | "Wait" nodes lose execution state permanently | Scheduled cron queries timestamp in Data Table | **100% reminder delivery guarantee** |
-| **Invalid Client Data** | Silent failure or broken calendar entry | Strict E.164 & ISO validation with HTTP 400 | **Clean data store** |
+| **`price`** | `"£51.77"`, `" $19.99 "` | `51.77` *(Float)* | Regex removes currency symbols & whitespace; parsed via `parseFloat()`. |
+| **`currency`** | `"£51.77"` | `"GBP"` *(ISO 4217)* | Symbol extraction: `£` → `GBP`, `$` → `USD`, `€` → `EUR`. |
+| **`rating`** | `"Three"`, `"Star 4"` | `3`, `4` *(Integer 1–5)* | Maps word representations (`One`=1, `Two`=2, `Three`=3, `Four`=4, `Five`=5). |
+| **`in_stock`** | `"In stock (22 available)"` | `true` *(Boolean)* | Lowercased string pattern match for `"in stock"`; defaults to `false`. |
+| **`title`** | `"  A Light in the ...  "` | `"A Light in the Attic"` | HTML entities decoded, extra whitespace trimmed and collapsed. |
+| **`category`** | `"Poetry\n"` | `"Poetry"` | Trailing line breaks and whitespace removed; title-cased. |
+| **`product_url`**| `"/catalogue/a-light_1000/index.html"` | Absolute URL | Relative paths resolved to absolute domain links. |
 
 ---
 
-## 📊 Persistent Data Store Schema (`appointment_bookings`)
+## 🔍 Deduplication & Change Detection Engine
 
-Built directly inside native **n8n Data Tables** (Table ID: `skyftJtM0pkUqeRp`) for maximum performance and zero external database cost:
+To prevent duplicate records and save database write operations, the pipeline utilizes an **in-memory diffing engine**:
 
-| Field Name | Type | Description |
-| :--- | :--- | :--- |
-| `booking_id` | `String` | Unique deterministic identifier (e.g. `BK-1790690589568-CGWOK`) |
-| `customer_name` | `String` | Full name of client |
-| `phone_e164` | `String` | International normalized phone (e.g. `+12025550192`) |
-| `email` | `String` | Client contact email address |
-| `service` | `String` | Name of service or consultation type |
-| `source` | `String` | Acquisition channel (`website`, `whatsapp`, `crm`) |
-| `timezone` | `String` | Client local timezone (e.g. `America/New_York`, `Asia/Dubai`) |
-| `requested_start` | `String` | ISO-8601 start timestamp |
-| `requested_end` | `String` | ISO-8601 calculated end timestamp |
-| `calendar_event_id`| `String` | Google Calendar event ID for direct lifecycle manipulation |
-| `status` | `String` | `confirmed` \| `rescheduled` \| `cancelled` \| `completed` |
-| `reminder_24h_sent`| `Boolean` | Flag preventing duplicate 24-hour reminder triggers |
-| `reminder_1h_sent` | `Boolean` | Flag preventing duplicate 1-hour countdown triggers |
-| `follow_up_sent` | `Boolean` | Flag preventing repeated post-meeting follow-up triggers |
-| `reschedule_url` | `String` | Direct client link with tokenized booking ID |
+1. **Persistent State Retrieval:** Queries all existing records in `scraped_catalog_data` (configured with `alwaysOutputData: true` so empty databases never block initial runs).
+2. **Lookup Indexing:** Builds an in-memory dictionary keyed by `record_id` (the canonical SKU).
+3. **Change Classification:**
+   * **`NEW`**: SKU does not exist in the database → Assigned `status: "active"`, sets `first_seen_at`, `last_seen_at`, and `last_changed_at`, queued for **INSERT**.
+   * **`UPDATED`**: SKU exists, but `price`, `in_stock`, or `title` changed → Assigned `status: "updated"`, updates `last_changed_at` and `last_seen_at`, queued for **UPDATE**.
+   * **`UNCHANGED`**: SKU exists and all tracked attributes match → Excluded from database write operations.
 
 ---
 
-## 🚀 API Endpoint Specifications
+## 📊 Persistent Data Table Schema (`scraped_catalog_data`)
 
-### 1. New Booking Request
-```bash
-POST /webhook/appointment-booking
-Content-Type: application/json
-```
-```json
-{
-  "name": "Sarah Connor",
-  "phone": "+12025550192",
-  "email": "sarah.connor@example.com",
-  "service": "Executive Consultation",
-  "requested_start": "2026-10-15T14:00:00.000Z",
-  "duration_minutes": 45,
-  "timezone": "America/New_York",
-  "source": "website"
-}
-```
-**Response (`201 Created`):**
-```json
-{
-  "success": true,
-  "status": "confirmed",
-  "booking": {
-    "booking_id": "BK-1790690589568-CGWOK",
-    "customer_name": "Sarah Connor",
-    "requested_start": "2026-10-15T14:00:00.000Z",
-    "status": "confirmed",
-    "reschedule_url": "https://n8n.domain.com/webhook/appointment-lifecycle?booking_id=BK-1790690589568-CGWOK&action=reschedule"
-  }
-}
-```
+The database table `scraped_catalog_data` (Data Table ID: `jiPLikaVYg9vxrIQ`) uses the following schema:
 
-### 2. Reschedule Request
+| Column Name | Data Type | Key / Constraint | Description |
+| :--- | :--- | :--- | :--- |
+| `record_id` | String | Unique Identifier | Scraped SKU or deterministic entity hash |
+| `source` | String | Required | Source origin (e.g., `books.toscrape.com`) |
+| `title` | String | Required | Cleaned product or listing title |
+| `category` | String | Optional | Normalized category classification |
+| `price` | Number (Float) | Required | Normalized unit price in numeric format |
+| `currency` | String | Required | ISO 4217 currency code (e.g., `GBP`, `USD`) |
+| `rating` | Number (Integer) | Optional | Normalized rating score (1 to 5) |
+| `in_stock` | Boolean | Required | Availability status (`true` / `false`) |
+| `product_url` | String | Unique / URL | Canonical link to source product page |
+| `image_url` | String | URL | URL of primary product photograph |
+| `status` | String | Enum | Lifecycle status (`active`, `updated`, `archived`) |
+| `first_seen_at` | String (ISO 8601) | Timestamp | Timestamp when item was first scraped |
+| `last_seen_at` | String (ISO 8601) | Timestamp | Timestamp of most recent scraper pass |
+| `last_changed_at` | String (ISO 8601) | Timestamp | Timestamp when price/status last changed |
+| `scraped_at` | String (ISO 8601) | Timestamp | Execution timestamp of scraping run |
+
+---
+
+## 🚀 How to Run Locally
+
+### 1. Prerequisites
+- Python 3.10+
+- An active n8n instance (Self-hosted or Cloud)
+
+### 2. Set Up the Python Scraper
 ```bash
-POST /webhook/appointment-lifecycle
-Content-Type: application/json
-```
-```json
-{
-  "booking_id": "BK-1790690589568-CGWOK",
-  "action": "reschedule",
-  "new_requested_start": "2026-10-18T10:00:00.000Z"
-}
+# Navigate to the scraper directory
+cd scraper
+
+# Install lightweight dependencies
+pip install -r requirements.txt
 ```
 
-### 3. Cancellation Request
+### 3. Run the Scraper
 ```bash
-POST /webhook/appointment-lifecycle
-Content-Type: application/json
-```
-```json
-{
-  "booking_id": "BK-1790690589568-CGWOK",
-  "action": "cancel",
-  "reason": "Customer schedule conflict"
-}
+# Run scraper, scrape 20 items, and post directly to n8n webhook:
+python scraper.py --limit 20 --webhook https://your-n8n-instance.com/webhook/scraped-data-intake
+
+# Or scrape and save to a local JSON file:
+python scraper.py --limit 50 --save scraped_data.json
 ```
 
 ---
 
-## 🧪 Verified Automated Test Suite
+## ⚙️ n8n Workflow Breakdown
 
-Every critical lifecycle pathway was executed and verified through n8n test executions:
+The production workflow file is located at [`workflows/web-scraping-data-cleaning-pipeline.json`](workflows/web-scraping-data-cleaning-pipeline.json).
+
+| # | Node Name | Node Type | Purpose |
+| :--- | :--- | :--- | :--- |
+| 1 | **Webhook Trigger** | `n8n-nodes-base.webhook` | Ingests JSON batches via `POST /webhook/scraped-data-intake` |
+| 2 | **Schedule Trigger** | `n8n-nodes-base.scheduleTrigger` | Triggers automated daily scheduled runs at 00:00 UTC |
+| 3 | **Volume Safeguard** | `n8n-nodes-base.code` | Enforces item batch limits (caps at 500 items) to prevent memory spikes |
+| 4 | **Validate Scraped Payload** | `n8n-nodes-base.code` | Discards malformed records lacking `sku` or `product_url` |
+| 5 | **Clean & Normalize Data** | `n8n-nodes-base.code` | Normalizes prices, currencies, ratings, booleans, and trims whitespace |
+| 6 | **Fetch Existing Database** | `n8n-nodes-base.dataTable` | Queries existing records from `scraped_catalog_data` with `alwaysOutputData: true` |
+| 7 | **Deduplicate & Detect Changes** | `n8n-nodes-base.code` | In-memory diffing engine classifying items into `NEW`, `UPDATED`, or `UNCHANGED` |
+| 8 | **Format Table Records** | `n8n-nodes-base.code` | Prepares records for database insertion, dropping internal diff flags |
+| 9 | **Has Changes to Save?** | `n8n-nodes-base.if` | Filters out `UNCHANGED` records to conserve database write quota |
+| 10 | **Insert Into Data Table** | `n8n-nodes-base.dataTable` | Appends new records into the persistent `scraped_catalog_data` table |
+| 11 | **Webhook Response** | `n8n-nodes-base.respondToWebhook` | Returns JSON summary with execution metrics (`new_records`, `updated_records`) |
+
+---
+
+## 🧪 Live Production Test & Verification
+
+The pipeline has been thoroughly tested and verified on a live production n8n environment:
+
+* **Workflow ID:** `kfiCNxBHNp96exFP`
+* **Verified Execution ID:** `#650`
+* **Status:** `success`
+* **Sample Test Result:**
+  * **Input:** 10 raw scraped products from `books.toscrape.com`.
+  * **Cleaning:** 100% of price strings (`"£51.77"`, `"£53.74"`) successfully converted to floating-point numbers; currency normalized to `"GBP"`; rating words (`"Three"`, `"One"`) converted to numerical values (`3`, `1`); stock strings converted to booleans (`true`).
+  * **Deduplication:** All 10 items classified as `NEW` on initial pass, assigned timestamps, and successfully inserted into `scraped_catalog_data`.
+
+---
+
+## 📁 Repository Structure
 
 ```text
-✔ Test 1: Valid Booking Intake (Execution #581)
-  → Schema parsed, calendar checked, event created, record persisted, notifications dispatched. [PASS]
-
-✔ Test 2: Conflict & Double-Booking Prevention (Execution #582)
-  → Conflicting slot detected; event creation blocked; clean 409 Conflict returned. [PASS]
-
-✔ Test 3: Input Validation & Formatting (Execution #583)
-  → Malformed phone & email caught; descriptive 400 Bad Request returned. [PASS]
-
-✔ Test 4: Appointment Rescheduling (Execution #584)
-  → Original booking identified; calendar updated; database status set to 'rescheduled'. [PASS]
-
-✔ Test 5: Appointment Cancellation (Execution #585)
-  → Calendar event deleted; database record marked 'cancelled'; cancellation notices sent. [PASS]
-
-✔ Test 6A: 24-Hour Autonomous Reminder (Execution #586)
-  → 24h window matched; WhatsApp & Email dispatched; reminder_24h_sent flagged true. [PASS]
-
-✔ Test 6B: Post-Meeting Follow-up / Recovery (Execution #587)
-  → Passed meeting matched; Thank-you & recovery link sent; status set to 'completed'. [PASS]
+├── README.md                                   # Comprehensive project overview & documentation
+├── prompts.md                                  # Original build specification & instructions
+├── scraper/
+│   ├── scraper.py                              # Modular Python BeautifulSoup scraper
+│   ├── requirements.txt                        # Python dependencies (requests, beautifulsoup4)
+│   └── scraped_data.json                       # Sample scraped dataset (10 items)
+├── workflows/
+│   ├── README.md                               # Workflow directory documentation
+│   └── web-scraping-data-cleaning-pipeline.json# Full 11-node n8n workflow definition
+└── docs/
+    ├── web-scraping-architecture.md            # Detailed technical architecture & data flow
+    └── upwork-portfolio.txt                    # Complete Upwork portfolio copy, tags & banner prompts
 ```
 
 ---
 
-## 📦 How to Import into Your n8n Instance
+## 📄 License
 
-1. **Clone the Repository:**
-   ```bash
-   git clone https://github.com/Harmain89/Web-Scraping-and-Data-Structuring-System.git
-   cd Web-Scraping-and-Data-Structuring-System
-   ```
-2. **Import Workflow JSONs into n8n:**
-   * Open your n8n dashboard $\rightarrow$ **Workflows** $\rightarrow$ **Import from File**.
-   * Import [`workflows/appointment-booking-intake.json`](workflows/appointment-booking-intake.json)
-   * Import [`workflows/appointment-booking-lifecycle.json`](workflows/appointment-booking-lifecycle.json)
-   * Import [`workflows/appointment-booking-reminders.json`](workflows/appointment-booking-reminders.json)
-3. **Configure Credentials:**
-   * Link your **Google Calendar OAuth2** credential to calendar nodes.
-   * Link your **WhatsApp Business Cloud API** credential.
-   * Link your **Gmail OAuth2** credential.
-4. **Create Data Table:**
-   * In n8n, create a Data Table named `appointment_bookings` matching the schema in [Schema Specification](#-persistent-data-store-schema-appointment_bookings).
-5. **Activate & Deploy:**
-   * Switch the toggle on all 3 workflows to **Active**.
-
----
-
-## 👨‍💻 Author & Automation Architect
-
-Built with precision for enterprise automation portfolios and real-world client deployments.
-
-* **GitHub:** [@Harmain89](https://github.com/Harmain89)
-* **Specialties:** n8n Architecture, Google Cloud Integrations, WhatsApp Cloud API, AI Agents & Enterprise Process Automation.
-
----
-
-<div align="center">
-  <sub>Engineered with 100% atomic reliability. Star ⭐ this repository if it helps your automation workflow!</sub>
-</div>
+This project is licensed under the MIT License - see the LICENSE file for details.
