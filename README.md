@@ -13,6 +13,14 @@
 
 </div>
 
+<br/>
+
+<div align="center">
+  <img src="./assets/hero-banner.gif" alt="Automated Web Scraping and Data Cleaning Pipeline" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.3);" />
+</div>
+
+<br/>
+
 ---
 
 ## 🎯 What Is This System For?
@@ -33,6 +41,10 @@ This system is an **autonomous, enterprise-grade ETL (Extract, Transform, Load) 
 ---
 
 ## 📐 Architecture & Data Flow
+
+<div align="center">
+  <img src="./assets/pipeline-architecture.png" alt="Pipeline Architecture & Data Flow" width="100%" style="border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.25); margin-bottom: 20px;" />
+</div>
 
 ```mermaid
 flowchart TD
@@ -77,6 +89,10 @@ flowchart TD
 
 ## 🧼 Data Cleaning & Normalization Engine
 
+<div align="center">
+  <img src="./assets/data-transformation.png" alt="Data Cleaning & Normalization Before vs After" width="100%" style="border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.25); margin-bottom: 20px;" />
+</div>
+
 Raw scraped data is normalized deterministically inside the n8n pipeline before reaching storage:
 
 | Field | Raw Scraped Input | Cleaned / Normalized Value | Transformation Applied |
@@ -92,6 +108,10 @@ Raw scraped data is normalized deterministically inside the n8n pipeline before 
 ---
 
 ## 🔍 Deduplication & Change Detection Engine
+
+<div align="center">
+  <img src="./assets/deduplication-sync.png" alt="Deduplication & Daily Synchronization Dashboard" width="100%" style="border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.25); margin-bottom: 20px;" />
+</div>
 
 To prevent duplicate records and save database write operations, the pipeline utilizes an **in-memory diffing engine**:
 

@@ -8,6 +8,10 @@ This document provides a comprehensive technical overview of the **Web Scraping 
 
 The **Web Scraping + Data Cleaning Pipeline** is an automated ETL (Extract, Transform, Load) system designed to reliably harvest unstructured or semi-structured data from target web sources, clean and normalize inconsistent fields in **n8n**, detect changes/deduplicate against existing catalog records, and store clean structured datasets into persistent storage.
 
+<div align="center">
+  <img src="../assets/pipeline-architecture.png" alt="Web Scraping + Data Cleaning Architecture" width="100%" style="border-radius: 10px; margin: 15px 0;" />
+</div>
+
 ```mermaid
 flowchart TD
     subgraph Data Extraction Layer
@@ -70,6 +74,11 @@ flowchart TD
   - Discards malformed records missing critical identifying attributes.
 
 ### 2.3 Cleaning & Normalization Engine (n8n JavaScript Code)
+
+<div align="center">
+  <img src="../assets/data-transformation.png" alt="Data Cleaning & Normalization Before vs After" width="100%" style="border-radius: 10px; margin: 15px 0;" />
+</div>
+
 Raw web data is notoriously dirty. The pipeline runs deterministic normalization functions across every record:
 
 | Field | Raw Extracted Value | Cleaned / Normalized Value | Transformation Logic |
@@ -85,6 +94,10 @@ Raw web data is notoriously dirty. The pipeline runs deterministic normalization
 ---
 
 ## 3. Deduplication & Change Detection Logic
+
+<div align="center">
+  <img src="../assets/deduplication-sync.png" alt="Deduplication & Daily Synchronization Dashboard" width="100%" style="border-radius: 10px; margin: 15px 0;" />
+</div>
 
 To avoid redundant database writes and prevent bloated datasets, the pipeline implements an **in-memory diffing engine**:
 
